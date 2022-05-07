@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
@@ -61,14 +62,13 @@ public class RSAService {
         byte[] publicKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        PKCS8EncodedKeySpec publicKeySpec = new PKCS8EncodedKeySpec(publicKeyBytes);
         PrivateKey privateKey = keyFactory.generatePrivate(publicKeySpec);
 
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
-        byte[] secretMessageBytes = request.getText().getBytes(StandardCharsets.UTF_8);
-        byte[] decryptedMessageBytes = cipher.doFinal(secretMessageBytes);
+        byte[] decryptedMessageBytes = cipher.doFinal(Base64.getDecoder().decode(request.getText()));
 
         return new String(decryptedMessageBytes, StandardCharsets.UTF_8);
 
